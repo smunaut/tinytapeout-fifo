@@ -23,10 +23,10 @@ module user_module_341263346544149074 (
 
 	wire [3:0] rd_data;
 	wire       rd_ena;
+	wire       rd_ena_n;
 	wire       rd_empty;
 
 	wire       wr_ena_buf;
-	wire       rd_ena_n;
 
 	wire  [DEPTH+1:0] valid;
 	wire  [3:0]       data [DEPTH+1:0];
@@ -35,13 +35,66 @@ module user_module_341263346544149074 (
 	// IOs
 	// ---
 
-	assign clk   = io_in[0];
-	assign rst_n = io_in[1];
+	// Clock
+	sky130_fd_sc_hd__clkbuf_4 inbuf_clk_I (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[0]),
+		.X    (clk)
+	);
 
-	assign wr_data = io_in[7:4];
-	assign wr_ena  = io_in[2];
-	assign rd_ena  = io_in[3];
+	// Reset
+	sky130_fd_sc_hd__buf_4 inbuf_rst_I (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[1]),
+		.X    (rst_n)
+	);
 
+	// Write data
+	sky130_fd_sc_hd__buf_4 inbuf_wr_data_I[3:0] (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[7:4]),
+		.X    (wr_data)
+	);
+
+	// Write ena
+	sky130_fd_sc_hd__buf_4 inbuf_wr_ena_I (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[2]),
+		.X    (wr_ena)
+	);
+
+	// Read enable
+	sky130_fd_sc_hd__buf_4 inbuf_rd_ena_I (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[3]),
+		.X    (rd_ena)
+	);
+
+	sky130_fd_sc_hd__inv_4 inbuf_rd_ena_n_I (
+`ifdef WITH_POWER
+		.VPWR (1'b1),
+		.VGND (1'b0),
+`endif
+		.A    (io_in[3]),
+		.Y    (rd_ena_n)
+	);
+
+	// Outputs
 	assign io_out[1:0] = 2'b00;
 	assign io_out[2]   = wr_full;
 	assign io_out[3]   = rd_empty;
@@ -50,16 +103,6 @@ module user_module_341263346544149074 (
 
 	// Stages
 	// ------
-
-	// Pre-invert rd_ena
-	sky130_fd_sc_hd__inv_2 rd_ena_inv_I (
-`ifdef WITH_POWER
-		.VPWR (1'b1),
-		.VGND (1'b0),
-`endif
-		.A    (rd_ena),
-		.Y    (rd_ena_n)
-	);
 
 	// Generate loop
 	genvar i;
