@@ -9,7 +9,7 @@ module user_module_341263346544149074 (
 	output wire  [7:0] io_out
 );
 
-	localparam integer DEPTH = 20;
+	localparam integer DEPTH = 24;
 
 	// Signals
 	// -------
